@@ -6,6 +6,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.example.coroutinestart.databinding.ActivityMainBinding
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -20,17 +22,22 @@ class MainActivity : AppCompatActivity() {
         binding.buttonLoad.setOnClickListener {
             binding.progressBar.isVisible = true
             binding.buttonLoad.isEnabled = false
-            val jobCity = lifecycleScope.launch {
+            val deferredCity: Deferred<String> = lifecycleScope.async {
                 val city = loadCity()
                 binding.textViewLocation.text = city
+                city
             }
-            val jobTemperature = lifecycleScope.launch {
+            val deferredTemperature: Deferred<Int> = lifecycleScope.async {
                 val temperature = loadTemperature()
                 binding.textViewTemperature.text = temperature.toString()
+                temperature
             }
             lifecycleScope.launch {
-                jobCity.join()
-                jobTemperature.join()
+                val city = deferredCity.await()
+                val temperature = deferredTemperature.await()
+                Toast.makeText(
+                    this@MainActivity, "City: $city Temperature: $temperature", Toast.LENGTH_SHORT
+                ).show()
                 binding.progressBar.isVisible = false
                 binding.buttonLoad.isEnabled = true
             }
