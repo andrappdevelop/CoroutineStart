@@ -36,7 +36,9 @@ class MainActivity : AppCompatActivity() {
                 val city = deferredCity.await()
                 val temperature = deferredTemperature.await()
                 Toast.makeText(
-                    this@MainActivity, "City: $city Temperature: $temperature", Toast.LENGTH_SHORT
+                    this@MainActivity,
+                    "City: $city Temperature: $temperature",
+                    Toast.LENGTH_SHORT
                 ).show()
                 binding.progressBar.isVisible = false
                 binding.buttonLoad.isEnabled = true
