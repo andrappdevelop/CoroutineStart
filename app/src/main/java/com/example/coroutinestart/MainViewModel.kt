@@ -3,13 +3,14 @@ package com.example.coroutinestart
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.*
-import kotlin.concurrent.thread
 
 class MainViewModel : ViewModel() {
 
-
     private val parentJob = Job()
-    private val coroutineScope = CoroutineScope(Dispatchers.Main + parentJob)
+    private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        Log.d(LOG_TAG, "Exception caught: $throwable")
+    }
+    private val coroutineScope = CoroutineScope(Dispatchers.Main + parentJob + exceptionHandler)
 
     fun method() {
         val childJob1 = coroutineScope.launch {
@@ -20,13 +21,15 @@ class MainViewModel : ViewModel() {
             delay(2000)
             Log.d(LOG_TAG, "Second coroutine finished")
         }
-        thread {
-            Thread.sleep(1000)
-            parentJob.cancel()
-            Log.d(LOG_TAG, "Parent job active: ${parentJob.isActive}")
+        val childJob3: Job = coroutineScope.launch {
+            delay(1000)
+            error()
+            Log.d(LOG_TAG, "Third coroutine finished")
         }
-        Log.d(LOG_TAG, parentJob.children.contains(childJob1).toString())
-        Log.d(LOG_TAG, parentJob.children.contains(childJob2).toString())
+    }
+
+    private fun error() {
+        throw RuntimeException()
     }
 
     override fun onCleared() {
